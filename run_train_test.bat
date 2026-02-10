@@ -17,9 +17,9 @@ set "OUT_DIR=runs/siamese_unet"
 set "INFER_OUT=runs/infer_unet_test"
 set "EPOCHS=30"
 set "BATCH=2"
-set "RESIZE=512"
-set "CROP_TRAIN=256"
-set "CROP_TEST=512"
+set "RESIZE=0"
+set "CROP_TRAIN=0"
+set "CROP_TEST=0"
 
 if /I "%1"=="quick" (
   set "EPOCHS=2"
@@ -31,7 +31,15 @@ if /I "%1"=="quick" (
 )
 
 echo === 1) Train Siamese UNet segmentation ===
-"%PY%" train_seg.py --tiles_dir "%TRAIN_TILES%" --val_tiles_dir "%VAL_TILES%" --out_dir "%OUT_DIR%" --epochs !EPOCHS! --batch_size !BATCH! --resize_to !RESIZE! --crop_size !CROP_TRAIN!
+set "VAL_ARG="
+dir /b "%VAL_TILES%\*_mask.*" >nul 2>nul
+if errorlevel 1 (
+  echo [run] No mask found in "%VAL_TILES%". Will NOT use it as val set; fallback to random split from train.
+) else (
+  set "VAL_ARG=--val_tiles_dir \"%VAL_TILES%\""
+)
+
+"%PY%" train_seg.py --tiles_dir "%TRAIN_TILES%" !VAL_ARG! --out_dir "%OUT_DIR%" --epochs !EPOCHS! --batch_size !BATCH! --resize_to !RESIZE! --crop_size !CROP_TRAIN!
 if errorlevel 1 exit /b 1
 
 set "CKPT=%OUT_DIR%\best.pt"
@@ -41,8 +49,13 @@ if not exist "%CKPT%" (
 )
 
 echo === 2) Eval on test_data (metrics) ===
-"%PY%" eval_seg.py --tiles_dir "%VAL_TILES%" --ckpt "%CKPT%" --resize_to !RESIZE! --crop_size !CROP_TEST!
-if errorlevel 1 exit /b 1
+dir /b "%VAL_TILES%\*_mask.*" >nul 2>nul
+if errorlevel 1 (
+  echo [run] No mask found in "%VAL_TILES%". Skip eval.
+) else (
+  "%PY%" eval_seg.py --tiles_dir "%VAL_TILES%" --ckpt "%CKPT%" --resize_to !RESIZE! --crop_size !CROP_TEST!
+  if errorlevel 1 exit /b 1
+)
 
 echo === 3) Inference export (pred mask + prob) ===
 "%PY%" infer_seg.py --tiles_dir "%VAL_TILES%" --ckpt "%CKPT%" --out_dir "%INFER_OUT%" --resize_to !RESIZE! --crop_size !CROP_TEST!

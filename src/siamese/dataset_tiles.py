@@ -11,7 +11,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 
 from .fits_io import read_fits_image, robust_normalize
-from .tiles_pairs import TileTriplet
+from .tiles_pairs import TilePair, TileTriplet
 
 
 @dataclass
@@ -110,4 +110,49 @@ class SiameseTilesSegDataset(Dataset):
 
         mask_t = torch.from_numpy(mask).long()
         return x1_t, x2_t, mask_t, t.key
+
+
+class SiameseTilesInferDataset(Dataset):
+    """
+    推理用（无mask）：
+    输出：
+    - x1: [1,H,W] float32
+    - x2: [1,H,W] float32
+    """
+
+    def __init__(
+        self,
+        pairs: Sequence[TilePair],
+        *,
+        config: TilesDatasetConfig = TilesDatasetConfig(),
+    ) -> None:
+        self.pairs = list(pairs)
+        self.cfg = config
+
+    def __len__(self) -> int:
+        return len(self.pairs)
+
+    def __getitem__(self, idx: int):
+        t = self.pairs[idx]
+        x1 = robust_normalize(read_fits_image(t.x1_path))
+        x2 = robust_normalize(read_fits_image(t.x2_path))
+
+        if self.cfg.resize_to is not None:
+            s = int(self.cfg.resize_to)
+            x1 = _pil_resize(x1, s, resample=Image.BILINEAR)
+            x2 = _pil_resize(x2, s, resample=Image.BILINEAR)
+
+        h, w = x1.shape
+        cs = int(self.cfg.crop_size)
+        if cs > 0 and (h >= cs and w >= cs):
+            top, left = _center_crop_coords(h, w, cs)
+            x1 = x1[top : top + cs, left : left + cs]
+            x2 = x2[top : top + cs, left : left + cs]
+
+        x1_t = torch.from_numpy(x1).unsqueeze(0)
+        x2_t = torch.from_numpy(x2).unsqueeze(0)
+        if self.cfg.normalize_to_minus1_1:
+            x1_t = x1_t * 2.0 - 1.0
+            x2_t = x2_t * 2.0 - 1.0
+        return x1_t, x2_t, t.key
 

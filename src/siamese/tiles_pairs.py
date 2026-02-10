@@ -20,6 +20,13 @@ class TileTriplet:
     mask_path: Path
 
 
+@dataclass(frozen=True)
+class TilePair:
+    key: str
+    x1_path: Path  # reference
+    x2_path: Path  # aligned
+
+
 def _key_from(name: str) -> Optional[str]:
     for r in (_REF_RE, _ALI_RE, _MSK_RE):
         m = r.match(name)
@@ -58,4 +65,33 @@ def build_tile_triplets(tiles_dir: str | os.PathLike) -> List[TileTriplet]:
     return [
         TileTriplet(key=k, x1_path=ref_by_key[k], x2_path=ali_by_key[k], mask_path=msk_by_key[k]) for k in keys
     ]
+
+
+def build_tile_pairs(tiles_dir: str | os.PathLike) -> List[TilePair]:
+    """
+    用于推理（无mask场景）：只要求 reference/aligned 成对存在。
+    """
+    tiles_dir = Path(tiles_dir)
+    if not tiles_dir.exists():
+        raise FileNotFoundError(f"找不到 tiles 目录：{tiles_dir}")
+
+    ref_by_key: dict[str, Path] = {}
+    ali_by_key: dict[str, Path] = {}
+
+    for p in sorted(tiles_dir.iterdir()):
+        if not p.is_file():
+            continue
+        k = _key_from(p.name)
+        if not k:
+            continue
+        lower = p.name.lower()
+        if "_1_reference" in lower:
+            ref_by_key[k] = p
+        elif "_2_aligned" in lower:
+            ali_by_key[k] = p
+
+    keys = sorted(set(ref_by_key) & set(ali_by_key))
+    if not keys:
+        raise RuntimeError(f"在 {tiles_dir} 中没有找到可用的 pair（reference/aligned）")
+    return [TilePair(key=k, x1_path=ref_by_key[k], x2_path=ali_by_key[k]) for k in keys]
 

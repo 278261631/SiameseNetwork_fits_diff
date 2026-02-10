@@ -67,7 +67,7 @@ python infer.py --data_dir data --ext png --ckpt runs/siamese_cls/best.pt --out_
 ### 分割训练
 
 ```bash
-python train_seg.py --tiles_dir data/tiles --out_dir runs/siamese_unet --epochs 30 --crop_size 256 --resize_to 512
+python train_seg.py --tiles_dir data/tiles --out_dir runs/siamese_unet --epochs 30 --resize_to 0 --crop_size 0
 ```
 
 说明：
@@ -78,7 +78,7 @@ python train_seg.py --tiles_dir data/tiles --out_dir runs/siamese_unet --epochs 
 ### 分割推理（导出预测 mask + 每类概率）
 
 ```bash
-python infer_seg.py --tiles_dir data/tiles --ckpt runs/siamese_unet/best.pt --out_dir runs/infer_unet --crop_size 512 --resize_to 512
+python infer_seg.py --tiles_dir data/tiles --ckpt runs/siamese_unet/best.pt --out_dir runs/infer_unet --resize_to 0 --crop_size 0
 ```
 
 输出：
@@ -99,7 +99,7 @@ python train_seg.py --tiles_dir data/tiles --val_tiles_dir test_data/tiles --out
 - **在 test_data 上评估指标**（像素精度 / mIoU / 每类 IoU）：
 
 ```bash
-python eval_seg.py --tiles_dir test_data/tiles --ckpt runs/siamese_unet/best.pt --resize_to 512 --crop_size 512
+python eval_seg.py --tiles_dir test_data/tiles --ckpt runs/siamese_unet/best.pt --resize_to 0 --crop_size 0
 ```
 
 也可以用一键脚本（Windows）：
