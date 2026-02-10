@@ -102,3 +102,8 @@ python train_seg.py --tiles_dir data/tiles --val_tiles_dir test_data/tiles --out
 python eval_seg.py --tiles_dir test_data/tiles --ckpt runs/siamese_unet/best.pt --resize_to 512 --crop_size 512
 ```
 
+也可以用一键脚本（Windows）：
+
+- `setup_venv.bat`：创建 `.venv` 并安装依赖
+- `run_train_test.bat`：训练 + 测试 + 导出预测
+- `run_test_only.bat`：**只测试/导出预测**（不训练）
