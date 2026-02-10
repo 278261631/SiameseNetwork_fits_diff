@@ -49,3 +49,56 @@ python infer.py --data_dir data --ext png --ckpt runs/siamese_cls/best.pt --out_
 你给的参考伪代码是“孪生 UNet 输出概率图”的分割/变化检测结构；但当前数据只有 `good/bad` 的**图像级标签**，没有像素级 mask，因此这里先实现了最直接可监督的**孪生分类**流程。
 如果你后续提供像素级标注（或希望做弱监督输出热力图/差分图），我可以把模型升级为孪生 UNet 并输出 2D 概率图。
 
+## ✅ 新增：Siamese UNet 像素级分割（tiles + mask）
+
+你更新后的数据结构：
+
+- `data/tiles/*_1_reference.fits`
+- `data/tiles/*_2_aligned.fits`
+- `data/tiles/*_mask.png`
+- `data/mask_codebook.json`：mask 像素值 code 映射
+
+`mask_codebook.json` 当前为 3 类：
+
+- 0: normal
+- 1: good
+- 2: bad
+
+### 分割训练
+
+```bash
+python train_seg.py --tiles_dir data/tiles --out_dir runs/siamese_unet --epochs 30 --crop_size 256 --resize_to 512
+```
+
+说明：
+
+- `resize_to` 会先把整图缩放到方形尺寸，再做 `crop_size` 的随机裁剪，CPU 也能跑通
+- 模型输出为 3 类 logits，loss 使用 `CrossEntropyLoss`
+
+### 分割推理（导出预测 mask + 每类概率）
+
+```bash
+python infer_seg.py --tiles_dir data/tiles --ckpt runs/siamese_unet/best.pt --out_dir runs/infer_unet --crop_size 512 --resize_to 512
+```
+
+输出：
+
+- `runs/infer_unet/*_pred.png`：预测类别图（像素值为 0/1/2）
+- `runs/infer_unet/*_prob.npz`：每类概率（shape `[C,H,W]`）
+
+## 使用 test_data 做验证/测试
+
+如果你有独立的测试集目录（例如 `test_data/tiles`），可以：
+
+- **训练时指定验证集目录**（不从训练集随机划分）：
+
+```bash
+python train_seg.py --tiles_dir data/tiles --val_tiles_dir test_data/tiles --out_dir runs/siamese_unet
+```
+
+- **在 test_data 上评估指标**（像素精度 / mIoU / 每类 IoU）：
+
+```bash
+python eval_seg.py --tiles_dir test_data/tiles --ckpt runs/siamese_unet/best.pt --resize_to 512 --crop_size 512
+```
+
