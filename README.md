@@ -88,18 +88,18 @@ python infer_seg.py --tiles_dir data/tiles --ckpt runs/siamese_unet/best.pt --ou
 
 ## 使用 test_data 做验证/测试
 
-如果你有独立的测试集目录（例如 `test_data/tiles`），可以：
+如果你有独立的测试集目录（例如 `test_data`），可以：
 
 - **训练时指定验证集目录**（不从训练集随机划分）：
 
 ```bash
-python train_seg.py --tiles_dir data/tiles --val_tiles_dir test_data/tiles --out_dir runs/siamese_unet
+python train_seg.py --tiles_dir data/tiles --val_tiles_dir test_data --out_dir runs/siamese_unet
 ```
 
 - **在 test_data 上评估指标**（像素精度 / mIoU / 每类 IoU）：
 
 ```bash
-python eval_seg.py --tiles_dir test_data/tiles --ckpt runs/siamese_unet/best.pt --resize_to 0 --crop_size 0
+python eval_seg.py --tiles_dir test_data --ckpt runs/siamese_unet/best.pt --resize_to 0 --crop_size 0
 ```
 
 也可以用一键脚本（Windows）：

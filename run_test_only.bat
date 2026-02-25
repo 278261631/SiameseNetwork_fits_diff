@@ -11,7 +11,7 @@ if not exist "%PY%" (
 )
 
 REM defaults
-set "VAL_TILES=test_data/tiles"
+set "VAL_TILES=test_data"
 set "CKPT=runs/siamese_unet/best.pt"
 set "INFER_OUT=runs/infer_unet_test"
 set "RESIZE=0"

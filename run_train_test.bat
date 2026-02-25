@@ -12,11 +12,11 @@ if not exist "%PY%" (
 
 REM defaults
 set "TRAIN_TILES=data/tiles"
-set "VAL_TILES=test_data/tiles"
+set "VAL_TILES=test_data"
 set "OUT_DIR=runs/siamese_unet"
 set "INFER_OUT=runs/infer_unet_test"
 set "EPOCHS=30"
-set "BATCH=2"
+set "BATCH=1"
 set "RESIZE=0"
 set "CROP_TRAIN=0"
 set "CROP_TEST=0"
@@ -31,15 +31,15 @@ if /I "%1"=="quick" (
 )
 
 echo === 1) Train Siamese UNet segmentation ===
-set "VAL_ARG="
 dir /b "%VAL_TILES%\*_mask.*" >nul 2>nul
 if errorlevel 1 (
   echo [run] No mask found in "%VAL_TILES%". Will NOT use it as val set; fallback to random split from train.
-) else (
-  set "VAL_ARG=--val_tiles_dir \"%VAL_TILES%\""
 )
-
-"%PY%" train_seg.py --tiles_dir "%TRAIN_TILES%" !VAL_ARG! --out_dir "%OUT_DIR%" --epochs !EPOCHS! --batch_size !BATCH! --resize_to !RESIZE! --crop_size !CROP_TRAIN!
+if errorlevel 1 (
+  "%PY%" train_seg.py --tiles_dir "%TRAIN_TILES%" --out_dir "%OUT_DIR%" --epochs !EPOCHS! --batch_size !BATCH! --resize_to !RESIZE! --crop_size !CROP_TRAIN!
+) else (
+  "%PY%" train_seg.py --tiles_dir "%TRAIN_TILES%" --val_tiles_dir "%VAL_TILES%" --out_dir "%OUT_DIR%" --epochs !EPOCHS! --batch_size !BATCH! --resize_to !RESIZE! --crop_size !CROP_TRAIN!
+)
 if errorlevel 1 exit /b 1
 
 set "CKPT=%OUT_DIR%\best.pt"

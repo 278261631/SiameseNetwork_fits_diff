@@ -21,7 +21,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--val_tiles_dir", type=str, default="", help="可选：独立验证tiles目录（如 test_data/tiles）。提供则不再从训练集随机划分val。")
     p.add_argument("--out_dir", type=str, default="runs/siamese_unet")
     p.add_argument("--epochs", type=int, default=30)
-    p.add_argument("--batch_size", type=int, default=2)
+    p.add_argument("--batch_size", type=int, default=1, help="全图(1024x1024)训练更稳妥，默认1")
     p.add_argument("--lr", type=float, default=3e-4)
     p.add_argument("--weight_decay", type=float, default=1e-4)
     p.add_argument("--seed", type=int, default=42)

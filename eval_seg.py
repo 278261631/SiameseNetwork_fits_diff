@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 
 import numpy as np
 import torch
@@ -14,7 +13,7 @@ from src.siamese.tiles_pairs import build_tile_triplets
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
-    p.add_argument("--tiles_dir", type=str, required=True, help="例如 test_data/tiles")
+    p.add_argument("--tiles_dir", type=str, required=True, help="例如 test_data 或 test_data/tiles")
     p.add_argument("--ckpt", type=str, required=True)
     p.add_argument("--num_classes", type=int, default=3)
     p.add_argument("--resize_to", type=int, default=0, help="0不缩放")
@@ -43,18 +42,18 @@ def main() -> None:
     model.load_state_dict(ckpt["model"], strict=True)
     model.eval()
 
-    # accumulate confusion matrix
     cm = np.zeros((args.num_classes, args.num_classes), dtype=np.int64)
     for x1, x2, mask, _key in loader:
         x1 = x1.to(device)
         x2 = x2.to(device)
-        mask = mask.numpy().astype(np.int64)  # [B,H,W]
+        mask_np = mask.numpy().astype(np.int64)  # [B,H,W]
         logits = model(x1, x2)
         pred = torch.argmax(logits, dim=1).cpu().numpy().astype(np.int64)
 
+        # accumulate confusion matrix
         for b in range(pred.shape[0]):
             p = pred[b].reshape(-1)
-            g = mask[b].reshape(-1)
+            g = mask_np[b].reshape(-1)
             for c in range(args.num_classes):
                 for d in range(args.num_classes):
                     cm[c, d] += int(np.sum((g == c) & (p == d)))
