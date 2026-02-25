@@ -26,7 +26,8 @@ def parse_args() -> argparse.Namespace:
 @torch.no_grad()
 def main() -> None:
     args = parse_args()
-    device = torch.device("cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"[eval_seg] device={device}")
 
     triplets = build_tile_triplets(args.tiles_dir)
     resize_to = None if args.resize_to <= 0 else int(args.resize_to)

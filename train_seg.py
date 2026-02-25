@@ -60,7 +60,8 @@ def main() -> None:
     args = parse_args()
     set_seed(args.seed)
 
-    device = torch.device("cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"[train_seg] device={device}")
     out_dir = ensure_dir(args.out_dir)
 
     train_triplets = build_tile_triplets(args.tiles_dir)
