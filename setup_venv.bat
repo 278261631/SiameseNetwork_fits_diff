@@ -20,6 +20,14 @@ if not exist "%PY%" (
   exit /b 1
 )
 
+set "http_proxy=http://localhost:10551"
+set "https_proxy=http://localhost:10551"
+set "HTTP_PROXY=%http_proxy%"
+set "HTTPS_PROXY=%https_proxy%"
+set "no_proxy=localhost,127.0.0.1"
+set "NO_PROXY=%no_proxy%"
+echo [setup] Using pip proxy: %http_proxy%
+
 echo [setup] Upgrading pip ...
 "%PY%" -m pip install --upgrade pip
 if errorlevel 1 exit /b 1
