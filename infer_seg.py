@@ -75,7 +75,11 @@ def main() -> None:
         pred = torch.argmax(prob, dim=1).cpu().numpy().astype(np.uint8)  # [B,H,W]
 
         for i, k in enumerate(key):
-            out_png = Path(out_dir) / f"{k}_pred.png"
+            # 预测mask默认按数据集标注命名规则输出为 *_mask.png。
+            # 若同名文件已存在（常见于带GT的目录），避免覆盖真值，改存为 *_mask_pred.png。
+            out_png = Path(out_dir) / f"{k}_mask.png"
+            if out_png.exists():
+                out_png = Path(out_dir) / f"{k}_mask_pred.png"
             Image.fromarray(pred[i], mode="L").save(out_png)
 
             # 同时保存每类概率（npz），便于后处理/可视化

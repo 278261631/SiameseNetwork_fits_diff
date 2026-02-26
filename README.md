@@ -83,7 +83,8 @@ python infer_seg.py --tiles_dir data/tiles --ckpt runs/siamese_unet/best.pt --re
 
 输出：
 
-- 默认输出到 `tiles_dir` 同目录（例如 `data/tiles/*_pred.png`、`data/tiles/*_prob.npz`）
+- 默认输出到 `tiles_dir` 同目录（例如 `data/tiles/*_mask.png`、`data/tiles/*_prob.npz`）
+- 若同名 `*_mask.png` 已存在（通常是真值标注），预测结果会自动写为 `*_mask_pred.png`，避免覆盖
 - 可选通过 `--out_dir` 指定其他输出目录
 
 ## 使用 test_data 做验证/测试
