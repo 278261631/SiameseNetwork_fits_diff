@@ -13,7 +13,6 @@ if not exist "%PY%" (
 REM defaults
 set "VAL_TILES=test_data"
 set "CKPT=runs/siamese_unet/best.pt"
-set "INFER_OUT=runs/infer_unet_test"
 set "RESIZE=0"
 set "CROP_TEST=0"
 
@@ -52,11 +51,11 @@ if errorlevel 1 (
 )
 
 echo === 2) Inference export (pred mask + prob) ===
-"%PY%" infer_seg.py --tiles_dir "%VAL_TILES%" --ckpt "%CKPT%" --out_dir "%INFER_OUT%" --resize_to !RESIZE! --crop_size !CROP_TEST!
+"%PY%" infer_seg.py --tiles_dir "%VAL_TILES%" --ckpt "%CKPT%" --resize_to !RESIZE! --crop_size !CROP_TEST!
 if errorlevel 1 exit /b 1
 
 echo [test] Done.
 echo [test] ckpt: %CKPT%
-echo [test] preds: %INFER_OUT%
+echo [test] preds: %VAL_TILES%
 exit /b 0
 

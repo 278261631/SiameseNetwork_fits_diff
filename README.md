@@ -78,13 +78,13 @@ python train_seg.py --tiles_dir data/tiles --out_dir runs/siamese_unet --epochs 
 ### 分割推理（导出预测 mask + 每类概率）
 
 ```bash
-python infer_seg.py --tiles_dir data/tiles --ckpt runs/siamese_unet/best.pt --out_dir runs/infer_unet --resize_to 0 --crop_size 0
+python infer_seg.py --tiles_dir data/tiles --ckpt runs/siamese_unet/best.pt --resize_to 0 --crop_size 0
 ```
 
 输出：
 
-- `runs/infer_unet/*_pred.png`：预测类别图（像素值为 0/1/2）
-- `runs/infer_unet/*_prob.npz`：每类概率（shape `[C,H,W]`）
+- 默认输出到 `tiles_dir` 同目录（例如 `data/tiles/*_pred.png`、`data/tiles/*_prob.npz`）
+- 可选通过 `--out_dir` 指定其他输出目录
 
 ## 使用 test_data 做验证/测试
 

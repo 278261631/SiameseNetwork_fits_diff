@@ -18,7 +18,12 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("--tiles_dir", type=str, default="data/tiles")
     p.add_argument("--ckpt", type=str, required=True)
-    p.add_argument("--out_dir", type=str, default="runs/infer_unet")
+    p.add_argument(
+        "--out_dir",
+        type=str,
+        default="",
+        help="输出目录；留空时默认输出到 tiles_dir（与数据同目录）",
+    )
     p.add_argument("--crop_size", type=int, default=0, help="0不裁剪（全图推理）")
     p.add_argument("--resize_to", type=int, default=0, help="0不缩放（保持原始位宽/动态范围，避免8-bit量化）")
     p.add_argument("--num_classes", type=int, default=3)
@@ -33,7 +38,9 @@ def main() -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[infer_seg] device={device}")
 
-    out_dir = ensure_dir(args.out_dir)
+    # 默认把输出写到数据目录，便于后续分析时直接与原始样本对应
+    out_root = args.out_dir.strip() if args.out_dir else ""
+    out_dir = ensure_dir(out_root or args.tiles_dir)
     resize_to = None if args.resize_to <= 0 else int(args.resize_to)
     cfg = TilesDatasetConfig(crop_size=args.crop_size, resize_to=resize_to)
 

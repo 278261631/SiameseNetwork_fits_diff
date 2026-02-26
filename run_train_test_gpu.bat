@@ -22,7 +22,6 @@ REM defaults
 set "TRAIN_TILES=data/tiles"
 set "VAL_TILES=test_data"
 set "OUT_DIR=runs/siamese_unet_gpu"
-set "INFER_OUT=runs/infer_unet_test_gpu"
 set "EPOCHS=30"
 set "BATCH=1"
 set "RESIZE=0"
@@ -68,11 +67,11 @@ if errorlevel 1 (
 )
 
 echo === 3) Inference export (pred mask + prob) ===
-"%PY%" infer_seg.py --tiles_dir "%VAL_TILES%" --ckpt "%CKPT%" --out_dir "%INFER_OUT%" --resize_to !RESIZE! --crop_size !CROP_TEST!
+"%PY%" infer_seg.py --tiles_dir "%VAL_TILES%" --ckpt "%CKPT%" --resize_to !RESIZE! --crop_size !CROP_TEST!
 if errorlevel 1 exit /b 1
 
 echo [run-gpu] Done.
 echo [run-gpu] model: %CKPT%
-echo [run-gpu] preds: %INFER_OUT%
+echo [run-gpu] preds: %VAL_TILES%
 echo [run-gpu] NOTE: train/eval/infer script must select CUDA device internally.
 exit /b 0
